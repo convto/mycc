@@ -133,12 +133,16 @@ Token *tokenize(char *p) {
     error_at(p, "can not tokenize");
   }
 
-  new_token(TK_EOF, cur, p);
+  new_token(TK_EOF, cur, p, 1);
   return head.next;
 }
 
 // 抽象構文木のノードの種類
 typedef enum {
+  ND_EQ,   // =
+  ND_NE,   // !=
+  ND_LT,   // <, >
+  ND_LE,   // <=, >=
   ND_ADD,  // +
   ND_SUB,  // -
   ND_MUL,  // *
@@ -172,14 +176,49 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *equality();
+Node *expr() { Node *node = equality(); }
+
+Node *relational();
+Node *equality() {
+  Node *node = relational();
+
+  for (;;) {
+    if (consume("=="))
+      node = new_node(ND_EQ, node, relational());
+    else if (consume("!="))
+      node = new_node(ND_NE, node, relational());
+    else
+      return node;
+  }
+}
+
+Node *add();
+Node *relational() {
+  Node *node = add();
+
+  for (;;) {
+    if (consume("<"))
+      node = new_node(ND_LT, node, add());
+    else if (consume("<="))
+      node = new_node(ND_LE, node, add());
+    else if (consume(">"))
+      node = new_node(ND_LT, add(), node);
+    else if (consume(">="))
+      node = new_node(ND_LE, add(), node);
+    else
+      return node;
+  }
+}
+
 Node *mul();
-Node *expr() {
+Node *add() {
   Node *node = mul();
 
   for (;;) {
-    if (consume('+'))
+    if (consume("+"))
       node = new_node(ND_ADD, node, mul());
-    else if (consume('-'))
+    else if (consume("-"))
       node = new_node(ND_SUB, node, mul());
     else
       return node;
@@ -191,9 +230,9 @@ Node *mul() {
   Node *node = unary();
 
   for (;;) {
-    if (consume('*'))
+    if (consume("*"))
       node = new_node(ND_MUL, node, unary());
-    else if (consume('/'))
+    else if (consume("/"))
       node = new_node(ND_DIV, node, unary());
     else
       return node;
@@ -202,16 +241,16 @@ Node *mul() {
 
 Node *term();
 Node *unary() {
-  if (consume('+')) return term();
-  if (consume('-')) return new_node(ND_SUB, new_node_num(0), term());
+  if (consume("+")) return term();
+  if (consume("-")) return new_node(ND_SUB, new_node_num(0), term());
   return term();
 }
 
 Node *term() {
   // 次のトークンが"("なら、"(" expr ")"のはず
-  if (consume('(')) {
+  if (consume("(")) {
     Node *node = expr();
-    expect(')');
+    expect(")");
     return node;
   }
 
