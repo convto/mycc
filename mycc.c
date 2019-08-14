@@ -118,8 +118,8 @@ Token *tokenize(char *p) {
     }
 
     // 一文字の演算子
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
-        *p == ')') {
+    if (*p == '<' || *p == '>' || *p == '+' || *p == '-' || *p == '*' ||
+        *p == '/' || *p == '(' || *p == ')') {
       cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
     }
@@ -271,6 +271,26 @@ void gen(Node *node) {
   printf("	pop rax\n");
 
   switch (node->kind) {
+    case ND_EQ:
+      printf("	cmp rax, rdi\n");
+      printf("	sete al\n");
+      printf("	movzb rax, al\n");
+      break;
+    case ND_NE:
+      printf("	cmp rax, rdi\n");
+      printf("	setne al\n");
+      printf("	movzb rax, al\n");
+      break;
+    case ND_LT:
+      printf("	cmp rax, rdi\n");
+      printf("	setl al\n");
+      printf("	movzb rax, al\n");
+      break;
+    case ND_LE:
+      printf("	cmp rax, rdi\n");
+      printf("	setle al\n");
+      printf("	movzb rax, al\n");
+      break;
     case ND_ADD:
       printf("	add rax, rdi\n");
       break;
