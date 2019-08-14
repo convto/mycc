@@ -20,6 +20,7 @@ struct Token {
   Token *next;     // 次の入力トークン
   int val;         // kind が TK_NUM の場合、その数値
   char *str;       // トークン文字列
+  int len;         // トークンの長さ
 };
 
 // 現在のトークン
@@ -44,16 +45,22 @@ void error_at(char *loc, char *fmt, ...) {
 
 // 現在のトークンが期待している記号のときには、トークンを一つ読み進めて
 // 真を返す。それ以外の場合は偽を返す。
-bool consume(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op) return false;
+bool consume(char *op) {
+  if (token->kind != TK_RESERVED || strlen(op) != token->len ||
+      // token->len の字数を比較
+      // 一致していれば 0(false) を返す
+      // 一致していなければ正または負の整数(true) を返す
+      memcmp(token->str, op, token->len))
+    return false;
   token = token->next;
   return true;
 }
 
 // 現在のトークンが期待している記号のときには、トークンを一つ読みすすめる。
 // それ以外の場合にはエラーを報告する
-void expect(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op)
+void expect(char *op) {
+  if (token->kind != TK_RESERVED || strlen(op) != token->len ||
+      memcmp(token->str, op, token->len))
     error_at(token->str, "not a '%c'", op);
   token = token->next;
 }
@@ -70,12 +77,22 @@ int expect_number() {
 bool at_eof() { return token->kind == TK_EOF; }
 
 // 新しいトークンを作成して cur につなげる
-Token *new_token(TokenKind kind, Token *cur, char *str) {
+Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
   Token *tok = calloc(1, sizeof(Token));
   tok->kind = kind;
   tok->str = str;
+  tok->len = len;
   cur->next = tok;
   return tok;
+}
+
+// 2文字以上の予約語とのマッチャー
+char *reserved_chars(char *p) {
+  static char *ops[] = {"==", "!=", "<=", ">="};
+  for (int i = 0; i < sizeof(ops) / sizeof(*ops); i++) {
+    if (memcmp(p, ops[i], strlen(ops[i])) == 0) return ops[i];
+  }
+  return NULL;
 }
 
 // 入力文字列 p をトークナイズしてそれを返す
@@ -91,14 +108,24 @@ Token *tokenize(char *p) {
       continue;
     }
 
+    // 二文字の演算子
+    char *op = reserved_chars(p);
+    if (op != NULL) {
+      int len = strlen(op);
+      cur = new_token(TK_RESERVED, cur, p, len);
+      p += len;
+      continue;
+    }
+
+    // 一文字の演算子
     if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
         *p == ')') {
-      cur = new_token(TK_RESERVED, cur, p++);
+      cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
     }
 
     if (isdigit(*p)) {
-      cur = new_token(TK_NUM, cur, p);
+      cur = new_token(TK_NUM, cur, p, 1);
       cur->val = strtol(p, &p, 10);
       continue;
     }

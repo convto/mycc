@@ -1,7 +1,7 @@
 IMAGE_NAME=convto/mycc
 IMAGE_VERSION=latest
 CFLAGS=-std=c11 -g -static
-RUN_CONTAINER=docker run -v `pwd`:/mycc -it --rm $(IMAGE_NAME):$(IMAGE_VERSION)
+RUN_CONTAINER=docker run -v `pwd`:/mycc -it --rm --cap-add=SYS_PTRACE --security-opt="seccomp=unconfined" $(IMAGE_NAME):$(IMAGE_VERSION)
 
 test-and-clean: test clean ## Run test and clean
 
@@ -25,3 +25,8 @@ build-img: ## Build ubuntu image
 run-img: ## Run ubuntu image
 	$(RUN_CONTAINER)
 
+clean-img: ## Remove old docker img
+	@docker system df
+	@docker system prune -f
+	@docker volume prune -f
+	@docker system df
