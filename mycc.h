@@ -8,6 +8,7 @@
 // トークンの種類
 typedef enum {
   TK_RESERVED,  // 記号
+  TK_IDENT,     // 識別子
   TK_NUM,       // 整数トークン
   TK_EOF,       // 入力の終わりを示すトークン
 } TokenKind;
@@ -31,7 +32,7 @@ extern char *user_input;
 
 // 抽象構文木のノードの種類
 typedef enum {
-  ND_EQ,   // =
+  ND_EQ,   // ==
   ND_NE,   // !=
   ND_LT,   // <, >
   ND_LE,   // <=, >=
@@ -39,6 +40,8 @@ typedef enum {
   ND_SUB,  // -
   ND_MUL,  // *
   ND_DIV,  // /
+  ND_ASSIGN, // =
+  ND_LVAR, // ローカル変数
   ND_NUM,  // 整数
 } NodeKind;
 
@@ -50,12 +53,14 @@ struct Node {
   Node *lhs;      // 左辺
   Node *rhs;      // 右辺
   int val;        // kind が ND_NUM のときのみ使う
+  int offset;     // kind が ND_LVAR のときのみ使う
 };
 
 void error_at(char *loc, char *fmt, ...);
 
 // トークンの一致判定関数の宣言
 bool consume(char *op);
+Token *consume_ident();
 
 // トークンの一致判定関数の宣言
 // 不一致の場合には exit する
@@ -64,6 +69,8 @@ void expect(char *op);
 // トークンが数値かどうかの判定する関数の宣言
 // 一致すれば数値を返し、そうでなければ exit する
 int expect_number();
+
+bool at_eof();
 
 Token *tokenize(char *p);
 

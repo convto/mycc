@@ -1,5 +1,7 @@
 #include "mycc.h"
 
+Node *code[100];
+
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
@@ -16,10 +18,33 @@ Node *new_node_num(int val) {
   return node;
 }
 
-Node *equality();
+Node *stmt();
+Node *program() {
+  int i = 0;
+  while (!at_eof()) code[i++] = stmt();
+  code[i] = NULL;
+}
+
+Node *expr();
+Node *stmt() {
+  Node *node = expr();
+  // expect は不一致時に exit する
+  // こうすることで `stmt = expr ";"` の EBNF に準拠できる
+  expect(";");
+  return node;
+}
+
+Node *assign();
 Node *expr() {
-	Node *node = equality();
-	return node;
+  Node *node = assign();
+  return node;
+}
+
+Node *equality();
+Node *assign() {
+  Node *node = equality();
+  if (consume("=")) node = new_node(ND_ASSIGN, node, assign());
+  return node;
 }
 
 Node *relational();
@@ -94,6 +119,14 @@ Node *term() {
   if (consume("(")) {
     Node *node = expr();
     expect(")");
+    return node;
+  }
+
+  Token *tok = consume_ident();
+  if (tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+    node->offset = (tok->str[0] - 'a' + 1) * 8;
     return node;
   }
 
