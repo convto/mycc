@@ -1,0 +1,74 @@
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// トークンの種類
+typedef enum {
+  TK_RESERVED,  // 記号
+  TK_NUM,       // 整数トークン
+  TK_EOF,       // 入力の終わりを示すトークン
+} TokenKind;
+
+typedef struct Token Token;
+
+// トークン型
+struct Token {
+  TokenKind kind;  // トークンの型
+  Token *next;     // 次の入力トークン
+  int val;         // kind が TK_NUM の場合、その数値
+  char *str;       // トークン文字列
+  int len;         // トークンの長さ
+};
+
+// 現在のトークン
+extern Token *token;
+
+// 入力プログラム
+extern char *user_input;
+
+// 抽象構文木のノードの種類
+typedef enum {
+  ND_EQ,   // =
+  ND_NE,   // !=
+  ND_LT,   // <, >
+  ND_LE,   // <=, >=
+  ND_ADD,  // +
+  ND_SUB,  // -
+  ND_MUL,  // *
+  ND_DIV,  // /
+  ND_NUM,  // 整数
+} NodeKind;
+
+typedef struct Node Node;
+
+// 抽象構文木のノードの型
+struct Node {
+  NodeKind kind;  // ノードの型
+  Node *lhs;      // 左辺
+  Node *rhs;      // 右辺
+  int val;        // kind が ND_NUM のときのみ使う
+};
+
+void error_at(char *loc, char *fmt, ...);
+
+// トークンの一致判定関数の宣言
+bool consume(char *op);
+
+// トークンの一致判定関数の宣言
+// 不一致の場合には exit する
+void expect(char *op);
+
+// トークンが数値かどうかの判定する関数の宣言
+// 一致すれば数値を返し、そうでなければ exit する
+int expect_number();
+
+Token *tokenize(char *p);
+
+// 抽象構文木にパースする関数の宣言
+Node *expr();
+
+// アセンブリ生成関数の宣言
+void gen(Node *node);
