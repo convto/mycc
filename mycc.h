@@ -56,6 +56,9 @@ struct Node {
   int offset;     // kind が ND_LVAR のときのみ使う
 };
 
+extern Node *code[];
+
+void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 
 // トークンの一致判定関数の宣言
@@ -75,7 +78,7 @@ bool at_eof();
 Token *tokenize(char *p);
 
 // 抽象構文木にパースする関数の宣言
-Node *expr();
+Node *program();
 
 // アセンブリ生成関数の宣言
 void gen(Node *node);

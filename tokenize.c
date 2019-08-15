@@ -3,6 +3,14 @@
 char *user_input;
 Token *token;
 
+void error(char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
 // エラー箇所を報告する
 void error_at(char *loc, char *fmt, ...) {
   va_list ap;
@@ -100,7 +108,7 @@ Token *tokenize(char *p) {
 
     // 一文字の演算子
     if (*p == '<' || *p == '>' || *p == '+' || *p == '-' || *p == '*' ||
-        *p == '/' || *p == '(' || *p == ')') {
+        *p == '/' || *p == '(' || *p == ')' || *p == ';' || *p == '=') {
       cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
     }
