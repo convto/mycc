@@ -1,7 +1,7 @@
 #include "mycc.h"
 
-char *user_input;
 Token *token;
+char *user_input;
 
 void error(char *fmt, ...) {
   va_list ap;
@@ -75,6 +75,15 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
   return tok;
 }
 
+// 変数を名前で検索する。見つからなかったらNULLを返す
+LVar *find_lvar(Token *tok) {
+  // 連結リスト LVar をすべて探索
+  for (LVar *var = locals; var; var = var->next)
+    if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
+      return var;
+  return NULL;
+}
+
 // 2文字以上の予約語とのマッチャー
 char *reserved_chars(char *p) {
   static char *ops[] = {"==", "!=", "<=", ">="};
@@ -114,7 +123,9 @@ Token *tokenize(char *p) {
     }
 
     if ('a' <= *p && *p <= 'z') {
-      cur = new_token(TK_IDENT, cur, p++, 1);
+      char *q = p++;
+      while ('a' <= *p && *p <= 'z') p++;
+      cur = new_token(TK_IDENT, cur, q, p - q);
       continue;
     }
 
