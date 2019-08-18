@@ -28,7 +28,7 @@ void error_at(char *loc, char *fmt, ...) {
 // 現在のトークンが期待している記号のときには、トークンを一つ読み進めて
 // 真を返す。それ以外の場合は偽を返す。
 bool consume(char *op) {
-  if (token->kind != TK_RESERVED && token->kind != TK_RETURN ||
+  if (token->kind != TK_RESERVED ||
       strlen(op) != token->len ||
       // token->len の字数を比較
       // 一致していれば 0(false) を返す
@@ -49,7 +49,7 @@ Token *consume_ident() {
 // 現在のトークンが期待している記号のときには、トークンを一つ読みすすめる。
 // それ以外の場合にはエラーを報告する
 void expect(char *op) {
-  if (token->kind != TK_RESERVED && token->kind != TK_RETURN ||
+  if (token->kind != TK_RESERVED ||
       strlen(op) != token->len || memcmp(token->str, op, token->len))
     error_at(token->str, "not a '%c'", op);
   token = token->next;
@@ -85,8 +85,17 @@ LVar *find_lvar(Token *tok) {
   return NULL;
 }
 
-// 2文字以上の予約語とのマッチャー
-char *reserved_chars(char *p) {
+// 制御構文
+char *get_controll_keyword(char *p) {
+  static char *kw[] = {"return", "if", "else", "while", "for"};
+  for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++) {
+    if (memcmp(p, kw[i], strlen(kw[i])) == 0) return kw[i];
+  }
+  return NULL;
+}
+
+// 2文字以上の演算子判定
+char *get_multi_char_operator(char *p) {
   static char *ops[] = {"==", "!=", "<=", ">="};
   for (int i = 0; i < sizeof(ops) / sizeof(*ops); i++) {
     if (memcmp(p, ops[i], strlen(ops[i])) == 0) return ops[i];
@@ -112,15 +121,17 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    // return文
-    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
-      cur = new_token(TK_RETURN, cur, p, 6);
-      p += 6;
+    // 制御構文のキーワード
+    char *kw = get_controll_keyword(p);
+    if (kw != NULL) {
+      int len = strlen(kw);
+      cur = new_token(TK_RESERVED, cur, p, len);
+      p += len;
       continue;
     }
 
     // 二文字の演算子
-    char *op = reserved_chars(p);
+    char *op = get_multi_char_operator(p);
     if (op != NULL) {
       int len = strlen(op);
       cur = new_token(TK_RESERVED, cur, p, len);
