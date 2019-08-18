@@ -28,7 +28,8 @@ void error_at(char *loc, char *fmt, ...) {
 // 現在のトークンが期待している記号のときには、トークンを一つ読み進めて
 // 真を返す。それ以外の場合は偽を返す。
 bool consume(char *op) {
-  if (token->kind != TK_RESERVED || strlen(op) != token->len ||
+  if (token->kind != TK_RESERVED && token->kind != TK_RETURN ||
+      strlen(op) != token->len ||
       // token->len の字数を比較
       // 一致していれば 0(false) を返す
       // 一致していなければ正または負の整数(true) を返す
@@ -48,8 +49,8 @@ Token *consume_ident() {
 // 現在のトークンが期待している記号のときには、トークンを一つ読みすすめる。
 // それ以外の場合にはエラーを報告する
 void expect(char *op) {
-  if (token->kind != TK_RESERVED || strlen(op) != token->len ||
-      memcmp(token->str, op, token->len))
+  if (token->kind != TK_RESERVED && token->kind != TK_RETURN ||
+      strlen(op) != token->len || memcmp(token->str, op, token->len))
     error_at(token->str, "not a '%c'", op);
   token = token->next;
 }
@@ -93,6 +94,11 @@ char *reserved_chars(char *p) {
   return NULL;
 }
 
+int is_alnum(char c) {
+  return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
+         ('0' <= c && c <= '9') || (c == '_');
+}
+
 // 入力文字列 p をトークナイズしてそれを返す
 Token *tokenize(char *p) {
   Token head;
@@ -103,6 +109,13 @@ Token *tokenize(char *p) {
     // 空白文字をスキップ
     if (isspace(*p)) {
       p++;
+      continue;
+    }
+
+    // return文
+    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
+      cur = new_token(TK_RETURN, cur, p, 6);
+      p += 6;
       continue;
     }
 

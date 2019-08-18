@@ -28,10 +28,18 @@ Node *program() {
 
 Node *expr();
 Node *stmt() {
-  Node *node = expr();
-  // expect は不一致時に exit する
-  // こうすることで `stmt = expr ";"` の EBNF に準拠できる
-  expect(";");
+  Node *node;
+
+  if (consume("return")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_RETURN;
+    node->lhs = expr();
+  } else {
+    node = expr();
+  }
+
+  if (!consume(";"))
+    error_at(token->str, "want ';' token. got %s", *token->str);
   return node;
 }
 
