@@ -139,8 +139,7 @@ Token *tokenize(char *p) {
     }
 
     // 一文字の演算子
-    if (*p == '<' || *p == '>' || *p == '+' || *p == '-' || *p == '*' ||
-        *p == '/' || *p == '(' || *p == ')' || *p == ';' || *p == '=') {
+    if (strchr("+-*/()<>;={}", *p)) {
       cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
     }
