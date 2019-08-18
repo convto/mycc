@@ -1,5 +1,7 @@
 #include "mycc.h"
 
+int labelseq = 1;
+
 void gen_lval(Node *node) {
   if (node->kind != ND_LVAR) error("left value is not variable");
   printf("  mov rax, rbp\n");
@@ -27,6 +29,28 @@ void gen(Node *node) {
       printf("  mov [rax], rdi\n");
       printf("  push rdi\n");
       return;
+    case ND_IF: {
+      int seq = labelseq++;
+      if (node->els) {
+        gen(node->cond);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je  .Lelse%d\n", seq);
+        gen(node->then);
+        printf("  jmp .Lend%d\n", seq);
+        printf(".Lelse%d:\n", seq);
+        gen(node->els);
+        printf(".Lend%d:\n", seq);
+      } else {
+        gen(node->cond);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je .Lend%d\n", seq);
+        gen(node->then);
+        printf(".Lend%d:\n", seq);
+      }
+      return;
+    }
     case ND_RETURN:
       gen(node->lhs);
       printf("  pop rax\n");

@@ -42,6 +42,7 @@ Node *stmt() {
     expect(")");
     node->then = stmt();
     if (consume("else")) node->els = stmt();
+    return node;
   } else if (consume("while")) {
     node = calloc(1, sizeof(Node));
     node->kind = ND_WHILE;
@@ -49,6 +50,7 @@ Node *stmt() {
     node->cond = expr();
     expect("(");
     node->then = stmt();
+    return node;
   } else if (consume("for")) {
     // "for" "(" expr? ";" expr? ";" expr? ")" stmt
     node = calloc(1, sizeof(Node));
@@ -63,6 +65,7 @@ Node *stmt() {
       node->inc = expr();
     }
     node->then = stmt();
+    return node;
   } else {
     node = expr();
   }
