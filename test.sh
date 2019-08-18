@@ -38,4 +38,8 @@ try 1 'a = 3; b = 4; a * b == (40 - 2 * 2) / (1 + 2);'
 try 6 'foo = 3; bar = 3; foo + bar;'
 try 12 'a = 3; b = 4; return a * b; return a + b;'
 try 10 'if (1 < 2) return 10;'
+try 10 'if (1 > 2) return 20; else return 10;'
+try 10 'i = 0; while (i <= 9) i = i + 1; return i;'
+try 0 'for (i = 0; i <= 9; i = i + 1) return i;'
+try 10 'for (i = 0; i <= 9; i = i + 1) if (i == 10) return i;'
 echo OK

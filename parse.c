@@ -48,21 +48,25 @@ Node *stmt() {
     node->kind = ND_WHILE;
     expect("(");
     node->cond = expr();
-    expect("(");
+    expect(")");
     node->then = stmt();
     return node;
   } else if (consume("for")) {
     // "for" "(" expr? ";" expr? ";" expr? ")" stmt
     node = calloc(1, sizeof(Node));
+    node->kind = ND_FOR;
     expect("(");
     if (!consume(";")) {
       node->init = expr();
+      expect(";");
     }
     if (!consume(";")) {
       node->cond = expr();
+      expect(";");
     }
     if (!consume(")")) {
       node->inc = expr();
+      expect(")");
     }
     node->then = stmt();
     return node;
