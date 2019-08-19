@@ -48,22 +48,23 @@ extern char *user_input;
 
 // 抽象構文木のノードの種類
 typedef enum {
-  ND_EQ,      // ==
-  ND_NE,      // !=
-  ND_LT,      // <, >
-  ND_LE,      // <=, >=
-  ND_ADD,     // +
-  ND_SUB,     // -
-  ND_MUL,     // *
-  ND_DIV,     // /
-  ND_ASSIGN,  // =
-  ND_LVAR,    // ローカル変数
-  ND_NUM,     // 整数
-  ND_RETURN,  // return文
-  ND_IF,      // if文
-  ND_WHILE,   // while文
-  ND_FOR,     // for文
-  ND_BLOCK,   // ブロック
+  ND_EQ,       // ==
+  ND_NE,       // !=
+  ND_LT,       // <, >
+  ND_LE,       // <=, >=
+  ND_ADD,      // +
+  ND_SUB,      // -
+  ND_MUL,      // *
+  ND_DIV,      // /
+  ND_ASSIGN,   // =
+  ND_LVAR,     // ローカル変数
+  ND_NUM,      // 整数
+  ND_RETURN,   // return文
+  ND_IF,       // if文
+  ND_WHILE,    // while文
+  ND_FOR,      // for文
+  ND_BLOCK,    // ブロック
+  ND_FUNCALL,  // 関数呼び出し
 } NodeKind;
 
 typedef struct Node Node;
@@ -84,6 +85,9 @@ struct Node {
   // block statement
   Node *body;  // ブロックノード
   Node *next;  // ブロック内の statement を連結リストで保持するノード
+
+  // func call
+  char *funcname;  // 関数名
 
   int val;     // kind が ND_NUM のときのみ使う
   int offset;  // kind が ND_LVAR のときのみ使う

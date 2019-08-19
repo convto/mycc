@@ -3,6 +3,18 @@
 Node *code[100];
 LVar *locals;
 
+// 利用している環境にたまたま strndup の実装がなかったので追加
+char *strndup(const char *s, size_t n) {
+  char *p = memchr(s, '\0', n);
+  if (p != NULL) n = p - s;
+  p = malloc(n + 1);
+  if (p != NULL) {
+    memcpy(p, s, n);
+    p[n] = '\0';
+  }
+  return p;
+}
+
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
@@ -184,6 +196,14 @@ Node *term() {
 
   Token *tok = consume_ident();
   if (tok) {
+    if (consume("(")) {
+      Node *node = calloc(1, sizeof(Node));
+      node->kind = ND_FUNCALL;
+      node->funcname = strndup(tok->str, tok->len);
+      expect(")");
+      return node;
+    }
+
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 
@@ -205,6 +225,5 @@ Node *term() {
     return node;
   }
 
-  // そうでなければ数値のはず
   return new_node_num(expect_number());
 }
