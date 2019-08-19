@@ -72,6 +72,7 @@ typedef struct Node Node;
 // 抽象構文木のノードの型
 struct Node {
   NodeKind kind;  // ノードの型
+  Node *next;     // 単一ノードへ連結するときに使う
   Node *lhs;      // 左辺
   Node *rhs;      // 右辺
 
@@ -84,10 +85,10 @@ struct Node {
 
   // block statement
   Node *body;  // ブロックノード
-  Node *next;  // ブロック内の statement を連結リストで保持するノード
 
   // func call
   char *funcname;  // 関数名
+  Node *args;      // 引数
 
   int val;     // kind が ND_NUM のときのみ使う
   int offset;  // kind が ND_LVAR のときのみ使う

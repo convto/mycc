@@ -1,6 +1,7 @@
 #include "mycc.h"
 
 int labelseq = 1;
+char *args[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 void gen_lval(Node *node) {
   if (node->kind != ND_LVAR) error("left value is not variable");
@@ -81,6 +82,17 @@ void gen(Node *node) {
       for (Node *n = node->body; n; n = n->next) gen(n);
       return;
     case ND_FUNCALL: {
+      int argcnt = 0;
+      // 引数をすべて評価して RSP に積む
+      for (Node *n = node->args; n; n = n->next) {
+        gen(n);
+        argcnt++;
+      }
+
+      // 引数の内容が RSP に積まれているので取り出してレジスタへ
+      // See: https://github.com/hjl-tools/x86-psABI/wiki/X86-psABI
+      for (int i = argcnt - 1; i >= 0; i--) printf("  pop %s\n", args[i]);
+
       printf("  call %s\n", node->funcname);
       return;
     }

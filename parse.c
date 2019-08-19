@@ -196,11 +196,23 @@ Node *term() {
 
   Token *tok = consume_ident();
   if (tok) {
+    // 関数呼び出しを保存
     if (consume("(")) {
       Node *node = calloc(1, sizeof(Node));
       node->kind = ND_FUNCALL;
       node->funcname = strndup(tok->str, tok->len);
-      expect(")");
+
+      // 引数を保存する node
+      if (!consume(")")) {
+        Node *head = assign();
+        Node *cur = head;
+        while (consume(",")) {
+          cur->next = assign();
+          cur = cur->next;
+        }
+        expect(")");
+        node->args = head;
+      }
       return node;
     }
 
