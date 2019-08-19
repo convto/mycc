@@ -30,10 +30,26 @@ Node *expr();
 Node *stmt() {
   Node *node;
 
-  if (consume("return")) {
+  if (consume("{")) {
+    Node head;
+    head.next = NULL;
+    Node *cur = &head;
+
+    while (!consume("}")) {
+      cur->next = stmt();
+      cur = cur->next;
+    }
+
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_BLOCK;
+    node->body = head.next;
+    return node;
+  } else if (consume("return")) {
     node = calloc(1, sizeof(Node));
     node->kind = ND_RETURN;
     node->lhs = expr();
+    expect(";");
+    return node;
   } else if (consume("if")) {
     node = calloc(1, sizeof(Node));
     node->kind = ND_IF;
@@ -72,11 +88,10 @@ Node *stmt() {
     return node;
   } else {
     node = expr();
+    if (!consume(";"))
+      error_at(token->str, "want ';' token. got %s", *token->str);
+    return node;
   }
-
-  if (!consume(";"))
-    error_at(token->str, "want ';' token. got %s", *token->str);
-  return node;
 }
 
 Node *assign();

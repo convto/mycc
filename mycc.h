@@ -31,10 +31,10 @@ typedef struct LVar LVar;
 
 // ローカル変数を表す型
 struct LVar {
-        LVar *next; // 次の変数かNULL
-        char *name; // 名前の変数
-        int len;    // 名前の長さ
-        int offset; // rbp からのオフセット
+  LVar *next;  // 次の変数かNULL
+  char *name;  // 名前の変数
+  int len;     // 名前の長さ
+  int offset;  // rbp からのオフセット
 };
 
 // ローカル変数
@@ -48,21 +48,22 @@ extern char *user_input;
 
 // 抽象構文木のノードの種類
 typedef enum {
-  ND_EQ,     // ==
-  ND_NE,     // !=
-  ND_LT,     // <, >
-  ND_LE,     // <=, >=
-  ND_ADD,    // +
-  ND_SUB,    // -
-  ND_MUL,    // *
-  ND_DIV,    // /
-  ND_ASSIGN, // =
-  ND_LVAR,   // ローカル変数
-  ND_NUM,    // 整数
-  ND_RETURN, // return文
-  ND_IF,     // if文
-  ND_WHILE,  // while文
-  ND_FOR,    // for文
+  ND_EQ,      // ==
+  ND_NE,      // !=
+  ND_LT,      // <, >
+  ND_LE,      // <=, >=
+  ND_ADD,     // +
+  ND_SUB,     // -
+  ND_MUL,     // *
+  ND_DIV,     // /
+  ND_ASSIGN,  // =
+  ND_LVAR,    // ローカル変数
+  ND_NUM,     // 整数
+  ND_RETURN,  // return文
+  ND_IF,      // if文
+  ND_WHILE,   // while文
+  ND_FOR,     // for文
+  ND_BLOCK,   // ブロック
 } NodeKind;
 
 typedef struct Node Node;
@@ -74,14 +75,18 @@ struct Node {
   Node *rhs;      // 右辺
 
   // controll statement
-  Node *cond;     // 条件ノード
-  Node *then;     // 実行ノード
-  Node *els;      // if文のelse節の実行ノード
-  Node *init;     // for文のループ文字宣言用のノード
-  Node *inc;      // for文のループごとの加算用のノード
+  Node *cond;  // 条件ノード
+  Node *then;  // 実行ノード
+  Node *els;   // if文のelse節の実行ノード
+  Node *init;  // for文のループ文字宣言用のノード
+  Node *inc;   // for文のループごとの加算用のノード
 
-  int val;        // kind が ND_NUM のときのみ使う
-  int offset;     // kind が ND_LVAR のときのみ使う
+  // block statement
+  Node *body;  // ブロックノード
+  Node *next;  // ブロック内の statement を連結リストで保持するノード
+
+  int val;     // kind が ND_NUM のときのみ使う
+  int offset;  // kind が ND_LVAR のときのみ使う
 };
 
 extern Node *code[];
