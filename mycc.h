@@ -30,6 +30,7 @@ extern Token *token;
 typedef struct LVar LVar;
 
 // ローカル変数を表す型
+// TODO: Var と VarList に分ける
 struct LVar {
   LVar *next;  // 次の変数かNULL
   char *name;  // 名前の変数
@@ -38,6 +39,7 @@ struct LVar {
 };
 
 // ローカル変数
+// TODO: グローバル変数も作る
 extern LVar *locals;
 
 // ローカル変数を探索する
@@ -65,6 +67,7 @@ typedef enum {
   ND_FOR,      // for文
   ND_BLOCK,    // ブロック
   ND_FUNCALL,  // 関数呼び出し
+  ND_FUNCDEF,  // 関数定義
 } NodeKind;
 
 typedef struct Node Node;

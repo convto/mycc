@@ -31,11 +31,81 @@ Node *new_node_num(int val) {
   return node;
 }
 
-Node *stmt();
+Node *function();
 Node *program() {
   int i = 0;
-  while (!at_eof()) code[i++] = stmt();
+  while (!at_eof()) code[i++] = function();
   code[i] = NULL;
+}
+
+Node *param();
+Node *stmt();
+Node *function() {
+  // 関数の形式かチェック
+  Token *tok = consume_ident();
+  if (!tok || !consume("(")) {
+    error("not a function");
+    return NULL;
+  }
+
+  Node *node = calloc(1, sizeof(Node));
+  node->kind = ND_FUNCDEF;
+  node->funcname = strndup(tok->str, tok->len);
+
+  // 宣言部分のパース
+  if (!consume(")")) {
+    Node *head = param();
+    Node *cur = head;
+    while (consume(",")) {
+      cur->next = param();
+      cur = cur->next;
+    }
+    expect(")");
+    node->args = head;
+  }
+
+  // ブロック部分のパース
+  if (consume("{")) {
+    Node head;
+    head.next = NULL;
+    Node *cur = &head;
+
+    while (!consume("}")) {
+      cur->next = stmt();
+      if (cur->offset)
+        cur->next->offset = 8;
+      else
+        cur->next->offset = cur->offset + 8;
+      cur = cur->next;
+    }
+
+    node->body = head.next;
+    return node;
+  }
+}
+
+Node *param() {
+  Token *tok = consume_ident();
+  if (!tok) {
+    error("not a parameter");
+    return NULL;
+  }
+  Node *node = calloc(1, sizeof(Node));
+  node->kind = ND_LVAR;
+  // 関数スコープなので find_lvar はしない
+  // TODO: スコープ概念を追加
+  // 引数をローカル変数に追加
+  LVar *lvar = calloc(1, sizeof(LVar));
+  lvar->next = locals;
+  lvar->name = tok->str;
+  lvar->len = tok->len;
+  if (locals)
+    lvar->offset = locals->offset + 8;
+  else
+    lvar->offset = 8;
+  node->offset = lvar->offset;
+  locals = lvar;
+  return node;
 }
 
 Node *expr();
