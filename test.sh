@@ -47,4 +47,5 @@ try 20 'main(){for (i = 0; i < 10; i = i + 1) { i = i + 9; i = i + 10; } return 
 try 10 'main(){ return foo(); } foo(){ f = 6; oo = 4; return f + oo; }'
 try 10 'main(){ foo = 3; bar = 7; foobar(foo, bar); } foobar(foo, bar) { foo + bar; }'
 try 55 'main() { return fib(10); } fib(n) { if (n == 0) { return 0; } if (n == 1) { return 1; } return fib(n - 1) + fib(n - 2); }'
+try 55 'sum(m, n) { acc = 0; for (i = m; i <= n; i = i + 1) acc = acc + i; return acc; } main() { return sum(1, 10); }'
 echo OK
